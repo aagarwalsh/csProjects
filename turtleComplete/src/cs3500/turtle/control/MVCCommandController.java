@@ -2,7 +2,6 @@ package cs3500.turtle.control;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.InputMismatchException;
 import java.util.Scanner;
 
 import cs3500.turtle.control.commands.Koch;
@@ -22,8 +21,8 @@ import cs3500.turtle.view.IView;
  * method processCommand
  */
 public class MVCCommandController implements IController, ActionListener {
-  private TracingTurtleModel model;
-  private IView view;
+  private final TracingTurtleModel model;
+  private final IView view;
 
   public MVCCommandController(TracingTurtleModel model, IView view) {
     this.model = model;
@@ -38,29 +37,32 @@ public class MVCCommandController implements IController, ActionListener {
 
   @Override
   public String processCommand(String command) {
+    if (command == null || command.trim().isEmpty()) {
+      throw new IllegalArgumentException("Enter a turtle command.");
+    }
+
     StringBuilder output = new StringBuilder();
     Scanner s = new Scanner(command);
-    TracingTurtleCommand cmd = null;
-
 
     while (s.hasNext()) {
       String in = s.next();
+      TracingTurtleCommand cmd;
 
       switch (in) {
         case "move":
-          cmd = new Move(s.nextDouble());
+          cmd = new Move(nextDouble(s, in));
           break;
         case "trace":
-          cmd = new Trace(s.nextDouble());
+          cmd = new Trace(nextDouble(s, in));
           break;
         case "turn":
-          cmd = new Turn(s.nextDouble());
+          cmd = new Turn(nextDouble(s, in));
           break;
         case "square":
-          cmd = new Square(s.nextDouble());
+          cmd = new Square(nextDouble(s, in));
           break;
         case "koch":
-          cmd = new Koch(s.nextDouble(), s.nextInt());
+          cmd = new Koch(nextDouble(s, in), nextInt(s, in));
           break;
         case "save":
           cmd = new Save();
@@ -69,18 +71,32 @@ public class MVCCommandController implements IController, ActionListener {
           cmd = new Retrieve();
           break;
         default:
-          output.append(String.format("Unknown command %s", in));
-          cmd = null;
-          break;
+          throw new IllegalArgumentException(String.format("Unknown command: %s", in));
       }
-      if (cmd != null) {
-        cmd.go(model);
-        output.append("Successfully executed: " + command);
+      cmd.go(model);
+      if (output.length() > 0) {
+        output.append(System.lineSeparator());
       }
+      output.append(String.format("Executed: %s", in));
     }
 
-
     return output.toString();
+  }
+
+  private static double nextDouble(Scanner scanner, String commandName) {
+    if (!scanner.hasNextDouble()) {
+      throw new IllegalArgumentException(
+              String.format("Expected a number after %s.", commandName));
+    }
+    return scanner.nextDouble();
+  }
+
+  private static int nextInt(Scanner scanner, String commandName) {
+    if (!scanner.hasNextInt()) {
+      throw new IllegalArgumentException(
+              String.format("Expected a whole-number depth after %s.", commandName));
+    }
+    return scanner.nextInt();
   }
 
   @Override
@@ -90,6 +106,7 @@ public class MVCCommandController implements IController, ActionListener {
 
     try {
       status = processCommand(command);
+      view.showStatusMessage(status);
     } catch (Exception ex) {
       view.showErrorMessage(ex.getMessage());
     }

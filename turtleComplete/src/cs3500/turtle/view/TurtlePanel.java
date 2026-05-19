@@ -1,11 +1,17 @@
 package cs3500.turtle.view;
 
-import java.awt.*;
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Ellipse2D;
+import java.awt.geom.Line2D;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.*;
+import javax.swing.JPanel;
 
 import cs3500.turtle.model.Position2D;
 import cs3500.turtle.tracingmodel.Line;
@@ -19,22 +25,19 @@ import cs3500.turtle.tracingmodel.Line;
  * create a class that extends JPanel or JLabel
  */
 public class TurtlePanel extends JPanel {
+  private static final int PADDING = 32;
+  private static final int TURTLE_SIZE = 10;
+
   private List<Line> lines;
   private Position2D turtlePosition;
   private double turtleHeading;
-  //the rectangle within which all lines lie
-  private Position2D minD, maxD;
-
 
   public TurtlePanel() {
     super();
-    lines = new ArrayList<Line>();
+    lines = new ArrayList<>();
     this.setBackground(Color.WHITE);
-    minD = new Position2D(0, 0);
-    maxD = new Position2D(0, 0);
     turtlePosition = new Position2D(0, 0);
     turtleHeading = 0.0;
-
   }
 
   public void setTurtlePosition(Position2D pos) {
@@ -46,35 +49,7 @@ public class TurtlePanel extends JPanel {
   }
 
   public void setLines(List<Line> lines) {
-    this.lines = new ArrayList<Line>(lines);
-    List<Position2D> points = new ArrayList<Position2D>();
-    for (Line l : this.lines) {
-      points.add(new Position2D(l.start));
-      points.add(new Position2D(l.end));
-    }
-    if (points.size() > 0) {
-
-      minD = points.get(0);
-      maxD = points.get(1);
-
-      for (Position2D p : points) {
-        if (p.getX() < minD.getX()) {
-          minD = new Position2D(p.getX(), minD.getY());
-        }
-        if (p.getY() > minD.getY()) {
-          minD = new Position2D(minD.getX(), p.getY());
-        }
-      }
-
-      for (Position2D p : points) {
-        if (p.getX() > maxD.getX()) {
-          maxD = new Position2D(p.getX(), maxD.getY());
-        }
-        if (p.getY() > maxD.getY()) {
-          maxD = new Position2D(maxD.getX(), p.getY());
-        }
-      }
-    }
+    this.lines = new ArrayList<>(lines);
   }
 
   /**
@@ -86,55 +61,78 @@ public class TurtlePanel extends JPanel {
 
   @Override
   protected void paintComponent(Graphics g) {
-    //never forget to call super.paintComponent!
     super.paintComponent(g);
 
     Graphics2D g2d = (Graphics2D) g;
-
-    g2d.setColor(Color.BLACK);
-
-    /*
-    the origin of the panel is top left. In order
-    to make the origin bottom left, we must "flip" the
-    y coordinates so that y = height - y
-
-    We do that by using an affine transform. The flip
-    can be specified as scaling y by -1 and then
-    translating by height.
-     */
+    g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
     AffineTransform originalTransform = g2d.getTransform();
+    double scale = applyDrawingTransform(g2d);
 
-    //the order of transforms is bottom-to-top
-    //so as a result of the two lines below,
-    //each y will first be scaled, and then translated
-    g2d.translate(0, this.getPreferredSize().getHeight());
-    g2d.scale(1, -1);
-
+    g2d.setColor(new Color(35, 35, 35));
+    g2d.setStroke(new BasicStroke((float) (2.0 / scale)));
     for (Line l : lines) {
       Position2D start = l.start;
       Position2D end = l.end;
-      g2d.drawLine((int) start.getX(), (int) start.getY(),
-              (int) end.getX(), (int) end.getY());
+      g2d.draw(new Line2D.Double(start.getX(), start.getY(), end.getX(), end.getY()));
     }
 
-    //draw the turtle
-    //an easy way to draw the turtle would be
-    //to draw it in its default position, and then
-    //rotate it by heading and translating it to
-    //its actual position
-    g2d.translate(Math.round(turtlePosition.getX()), Math.round(
-            turtlePosition.getY
-                    ()));
+    double turtleSize = TURTLE_SIZE / scale;
+    g2d.translate(Math.round(turtlePosition.getX()), Math.round(turtlePosition.getY()));
     g2d.rotate(Math.toRadians(turtleHeading));
-    g2d.setColor(Color.BLUE);
-    g2d.fillOval(-2, -2, 4, 4);
-    g2d.setColor(Color.BLACK);
-    g2d.fillOval(-1, -1, 2, 2);
-    g2d.setColor(Color.RED);
-    g2d.fillOval(-8, -4, 8, 8);
+    g2d.setColor(new Color(40, 110, 190));
+    g2d.fill(new Ellipse2D.Double(-turtleSize / 2, -turtleSize / 2,
+            turtleSize, turtleSize));
+    g2d.setColor(new Color(220, 70, 70));
+    g2d.fill(new Ellipse2D.Double(-turtleSize, -turtleSize / 2,
+            turtleSize, turtleSize));
 
-    //reset the transform to what it was!
     g2d.setTransform(originalTransform);
+  }
+
+  private double applyDrawingTransform(Graphics2D g2d) {
+    Bounds bounds = getDrawingBounds();
+    double drawingWidth = Math.max(bounds.maxX - bounds.minX, 1);
+    double drawingHeight = Math.max(bounds.maxY - bounds.minY, 1);
+    double availableWidth = Math.max(getWidth() - (2.0 * PADDING), 1);
+    double availableHeight = Math.max(getHeight() - (2.0 * PADDING), 1);
+    double scale = Math.min(availableWidth / drawingWidth, availableHeight / drawingHeight);
+
+    g2d.translate(
+            PADDING + ((availableWidth - (drawingWidth * scale)) / 2.0),
+            getHeight() - PADDING - ((availableHeight - (drawingHeight * scale)) / 2.0));
+    g2d.scale(scale, -scale);
+    g2d.translate(-bounds.minX, -bounds.minY);
+    return scale;
+  }
+
+  private Bounds getDrawingBounds() {
+    Bounds bounds = new Bounds(turtlePosition.getX(), turtlePosition.getY());
+    for (Line line : lines) {
+      bounds.include(line.start);
+      bounds.include(line.end);
+    }
+    return bounds;
+  }
+
+  private static final class Bounds {
+    private double minX;
+    private double minY;
+    private double maxX;
+    private double maxY;
+
+    Bounds(double x, double y) {
+      this.minX = x;
+      this.minY = y;
+      this.maxX = x;
+      this.maxY = y;
+    }
+
+    void include(Position2D point) {
+      minX = Math.min(minX, point.getX());
+      minY = Math.min(minY, point.getY());
+      maxX = Math.max(maxX, point.getX());
+      maxY = Math.max(maxY, point.getY());
+    }
   }
 }

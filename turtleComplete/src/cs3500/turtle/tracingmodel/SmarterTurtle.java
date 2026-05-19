@@ -10,6 +10,9 @@ import cs3500.turtle.model.SimpleTurtle;
  * Created by blerner on 10/10/16.
  */
 public class SmarterTurtle extends SimpleTurtle implements TracingTurtleModel {
+  // List of lines traced since this object was created.
+  private final List<Line> lines;
+
   public SmarterTurtle() {
     super();
     lines = new ArrayList<>();
@@ -28,8 +31,4 @@ public class SmarterTurtle extends SimpleTurtle implements TracingTurtleModel {
     return new ArrayList<>(lines);
   }
 
-  //list of lines traced since this object was created
-  List<Line> lines;
-
 }
-

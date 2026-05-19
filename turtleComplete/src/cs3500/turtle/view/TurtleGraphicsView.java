@@ -1,13 +1,18 @@
 package cs3500.turtle.view;
 
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyListener;
-import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.*;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
 
 import cs3500.turtle.model.Position2D;
 import cs3500.turtle.tracingmodel.Line;
@@ -20,15 +25,16 @@ import cs3500.turtle.tracingmodel.Line;
  * and heading
  */
 public class TurtleGraphicsView extends JFrame implements IView {
-  private JButton commandButton, quitButton;
-  private JPanel buttonPanel;
-  private TurtlePanel turtlePanel;
-  private JTextField input;
-  private JLabel display;
+  private final JButton commandButton;
+  private final JButton quitButton;
+  private final JPanel buttonPanel;
+  private final TurtlePanel turtlePanel;
+  private final JTextField input;
+  private final JLabel display;
 
   public TurtleGraphicsView() {
     super();
-    this.setTitle("Turtles!");
+    this.setTitle("TurtleComplete");
     this.setSize(500, 500);
     this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -43,11 +49,12 @@ public class TurtleGraphicsView extends JFrame implements IView {
     buttonPanel.setLayout(new FlowLayout());
     this.add(buttonPanel, BorderLayout.SOUTH);
 
-    //input textfield
-    input = new JTextField(15);
+    display = new JLabel("Ready");
+    this.add(display, BorderLayout.NORTH);
+
+    input = new JTextField(24);
     buttonPanel.add(input);
 
-    //buttons
     commandButton = new JButton("Execute");
     buttonPanel.add(commandButton);
 
@@ -72,6 +79,7 @@ public class TurtleGraphicsView extends JFrame implements IView {
   @Override
   public void setCommandButtonListener(ActionListener actionEvent) {
     commandButton.addActionListener(actionEvent);
+    input.addActionListener(actionEvent);
   }
 
   @Override
@@ -105,8 +113,13 @@ public class TurtleGraphicsView extends JFrame implements IView {
 
   @Override
   public void showErrorMessage(String error) {
+    display.setText("Error: " + error);
     JOptionPane.showMessageDialog(this, error, "Error", JOptionPane.ERROR_MESSAGE);
+  }
 
+  @Override
+  public void showStatusMessage(String status) {
+    display.setText(status);
   }
 
 }

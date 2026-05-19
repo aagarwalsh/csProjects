@@ -1,12 +1,13 @@
 package cs3500.turtle.model;
 
-import java.util.Objects;
-
 /**
  * This class represents a 2D position
  */
 public final class Position2D {
+  private static final double EPSILON = 0.01;
+
   private final double x;
+  private final double y;
 
   public double getX() {
     return x;
@@ -15,8 +16,6 @@ public final class Position2D {
   public double getY() {
     return y;
   }
-
-  private final double y;
 
   /**
    * Initialize this object to the specified position
@@ -49,11 +48,12 @@ public final class Position2D {
 
     Position2D that = (Position2D) a;
 
-    return ((Math.abs(this.x - that.x) < 0.01) && (Math.abs(this.y - that.y) < 0.01));
+    return ((Math.abs(this.x - that.x) < EPSILON) && (Math.abs(this.y - that.y) < EPSILON));
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(this.x, this.y);
+    // Equality is tolerance-based, so a constant hash keeps the contract correct.
+    return 0;
   }
 }

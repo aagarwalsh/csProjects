@@ -47,6 +47,7 @@ public class CommandController {
             break;
           case "koch":
             cmd = new Koch(s.nextDouble(), s.nextInt());
+            break;
           default:
             System.out.println(String.format("Unknown command %s", in));
             cmd = null;

@@ -1,7 +1,6 @@
 package cs3500.turtle.view;
 
 import java.awt.event.ActionListener;
-import java.awt.event.KeyListener;
 import java.util.List;
 
 import cs3500.turtle.model.Position2D;
@@ -66,6 +65,13 @@ public interface IView {
    * @param error
    */
   void showErrorMessage(String error);
+
+  /**
+   * Display a non-error status message to the user.
+   *
+   * @param status status text to display
+   */
+  void showStatusMessage(String status);
 
   /**
    * Signal the view to draw itself

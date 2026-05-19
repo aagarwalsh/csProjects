@@ -1,7 +1,5 @@
 package cs3500.turtle.tracingmodel;
 
-import java.util.Objects;
-
 import cs3500.turtle.model.Position2D;
 
 /**
@@ -38,6 +36,6 @@ public final class Line {
 
   @Override
   public int hashCode() {
-    return Objects.hash(this.start, this.end);
+    return this.start.hashCode() + this.end.hashCode();
   }
 }
