@@ -1,0 +1,29 @@
+# Critique
+
+The first thing that struck out to us is the differences in how we communicate between
+the views and model. While our design does this through the controller and the view and
+model do not ever directly communicate, our provider uses an immutable interface implementation
+of the model which is passed in to the views. This was an interesting design choice.
+Clearly, both our designs aimed at avoiding any direct mutation of the model due to the view,
+just in very different ways.
+
+We weren’t sure about what the function of IViewModel was until we spoke to one of the
+providers for further clarification. Upon discovering that it simply acted as a getter,
+we were concerned about whether this is a good design choice. Creating a model, and then
+another so that it can simply act as a getter, seemed redundant.
+However, it was a good way to store all the information in one object instead of multiple
+fields/objects, as we did.
+
+A lot of the documentation/java docs were not too helpful - we had to email our provider
+for the clarification for some of them. Some of their helpers do not have java doc comments
+and if they do they are not informative on the purpose of the code. In particular,
+their EditorViewListener has a Map<String, Runnable> with little documentation on what
+the key and value represent. The ReadMe wasn’t comprehensive; it simply listed the functions
+supported by the EditorView. We had no idea what the design and organisation of the classes and
+interfaces was and ended up spending a lot of time trying to figure that out before we could begin
+actually working on adapting it. It would have been more helpful if they had provided more
+information regarding their design.
+
+In terms of suggestions, we would say that coming up with a simpler organization of the code would
+be better - while their editor view GUI looks great, there are definitely simpler ways to do it -
+their code seemed a little all over the place, and we were concerned about how to organise it all.
